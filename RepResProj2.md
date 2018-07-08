@@ -1,49 +1,86 @@
 ---
-title: "Cleaning and Exploring Storm Event Costs to Human and Economic Capital"
+title: "RepResWeek4Proj"
 output:
   html_document:
     keep_md: yes
   pdf_document: default
-date: '`r Sys.Date()`'
+date: '2018-06-25'
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-Synopsis: The NWSI storm event data set that indexes storms and the damages that
-they cause was downloaded and manipulated to yield events in line with the 
-predetermined event types.  The event types that cause the most human injuries
-and fatalities it are tornadoes (91,364 injuries and 5658 fatalities), followed
-by thunderstorm winds (9552 injuries, 736 fatalities), heat (9243 injuries, 2840
-fatalities), and flash floods (1800 injuries, 978 fatalities).  The event types
-that cause the most property and crop damage are somewhat different; the most 
-costly events being thunderstorm winds ($74B in crops, $27B in property), hail 
-($63B in crops, $33B in property), tornados ($20B in crops, $5B in property), 
-and floods ($9B in crops, $13B in property).  For both economic and human loss
-the top two to four event types account for >75% of the total categorical costs.
 
 
-Reproducible Research week 4 peer review project 
+## Reproducible Research week 4 peer review project 
 
 The following chunk of code downloads the data directly from the hosted location, unzips the data as a csv and converts to a data table format to be more rapidly manipulated.
 
-```{r}
-library(data.table)
 
+```r
+library(data.table)
+```
+
+```
+## Warning: package 'data.table' was built under R version 3.3.2
+```
+
+```r
 temp <- tempfile()
 download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2",temp,cacheOK = TRUE)
 df<-read.csv(temp)
 
 df<-data.table(df)
-
-
 ```
 Looking at the data it is evident that there is a lot more than the 48 event names found in the NWSI 10-1065 sheet.  In order to ensure that as much of this data is included in the analysis as possible, and to correctly assign the events to best estimate the impact of a given event, each event type was revalued to one of the NWSI event types.  When the event could not be determined from the given event type in the data it was classified as "other."  This next large chunk of code is present to document how the revaluation of the event types were performed.  
 
-```{r, echo=TRUE}
+
+```r
 library(plyr)
 library(dplyr)
+```
 
+```
+## -------------------------------------------------------------------------
+```
+
+```
+## data.table + dplyr code now lives in dtplyr.
+## Please library(dtplyr)!
+```
+
+```
+## -------------------------------------------------------------------------
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:plyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize
+```
+
+```
+## The following objects are masked from 'package:data.table':
+## 
+##     between, first, last
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 #Recategorizing event types to properly quantify the impacts of diffferent weather types.  The categories were individually forced into one of the categories from 2.1.1 Storm Data Event Table found in the NWSI 10-1605 document.
 
 df$EventName <- revalue(df$EVTYPE,
@@ -1073,25 +1110,85 @@ df$EventName <- revalue(df$EVTYPE,
                  "WINTRY MIX"="Winter Weather",
                  "WND"="Strong Wind"
                  ))
+```
 
+```
+## The following `from` values were not present in `x`:  TSTM WIND, FREEZING DRIZZLE AND FREEZING, Freezing Fog, FREEZING FOG, GLAZE, GLAZE ICE, GLAZE/ICE STORM, Heavy Wind, HIGH  WINDSW, Lake Effect Sno, LATE SEASON SNOW, Late Season Snowfall, LATE SNOW, Late-season Snowfall, LIGHT FREEZING RAIN, Light snow, RIVER AND STREAM FLOOD, RIVER FLOOD, River Flooding, ROCK SLIDE, ROGUE WAVE, ROTATING WALL CLOUD, SEVERE THUNDERSTORM WINDS, SEVERE THUNDERSTORMS, SEVERE TURBULENCE, SNOW/ BITTER COLD, SNOW/ ICE, SNOW/BLOWING SNOW, SNOW/BLOWING SNOW, SNOW/COLD, SNOW/FREEZING RAIN, SNOW/HEAVY SNOW, SNOW/HIGH WINDS, SNOW/ICE, Summary of March 24, SUMMARY OF MARCH 24-25, SUMMARY OF MARCH 27, Summary of May 22 pm, Summary of May 26 am, Summary of May 26 pm, Temperature record
 ```
 
 Some initial data summing and exploratory value generation to help understand the scale of the categories of interest.  Fatalities can and injuries can simply be summed to understand the total impact across the dataset to help inform expectations.  
 
-```{r, echo=TRUE}
 
+```r
 print("Fatalities")
+```
+
+```
+## [1] "Fatalities"
+```
+
+```r
 sum(df$FATALITIES)
+```
+
+```
+## [1] 15145
+```
+
+```r
 print("Injuries")
+```
+
+```
+## [1] "Injuries"
+```
+
+```r
 sum(df$INJURIES)
+```
 
+```
+## [1] 140528
+```
 
-
+```r
 #Aggregating and ordering events as a function of fatalities with the original values given for event type
 FatNum <- aggregate(df$FATALITIES~df$EVTYPE,df,sum)
 FatNum$`df$FATALITIES` <- as.numeric(as.character(FatNum$`df$FATALITIES`))
 FatSort<-FatNum[rev(order(FatNum$`df$FATALITIES`)),]
 head(FatSort,25)
+```
+
+```
+##                   df$EVTYPE df$FATALITIES
+## 834                 TORNADO          5633
+## 130          EXCESSIVE HEAT          1903
+## 153             FLASH FLOOD           978
+## 275                    HEAT           937
+## 464               LIGHTNING           816
+## 856               TSTM WIND           504
+## 170                   FLOOD           470
+## 585             RIP CURRENT           368
+## 359               HIGH WIND           248
+## 19                AVALANCHE           224
+## 972            WINTER STORM           206
+## 586            RIP CURRENTS           204
+## 278               HEAT WAVE           172
+## 140            EXTREME COLD           160
+## 760       THUNDERSTORM WIND           133
+## 310              HEAVY SNOW           127
+## 141 EXTREME COLD/WIND CHILL           125
+## 676             STRONG WIND           103
+## 350               HIGH SURF           101
+## 30                 BLIZZARD           101
+## 290              HEAVY RAIN            98
+## 142            EXTREME HEAT            96
+## 79          COLD/WIND CHILL            95
+## 427               ICE STORM            89
+## 957                WILDFIRE            75
+```
+
+```r
 FatHead<-FatSort[1:10,]
 
 #Aggregating and ordering based on revalued events as a function of fatalities
@@ -1099,6 +1196,38 @@ FatNum2 <- aggregate(df$FATALITIES~df$EventName,df,sum)
 FatNum2$`df$FATALITIES` <- as.numeric(as.character(FatNum2$`df$FATALITIES`))
 FatSort2<-FatNum2[rev(order(FatNum2$`df$FATALITIES`)),]
 head(FatSort2,25)
+```
+
+```
+##                df$EventName df$FATALITIES
+## 40                  Tornado          5658
+## 9                      Heat          3178
+## 3               Flash Flood          1035
+## 4                 Lightning           817
+## 5         Thunderstorm Wind           736
+## 37              Rip Current           577
+## 19                    Flood           559
+## 15          Cold/Wind Chill           469
+## 21              Strong Wind           438
+## 16             Winter Storm           434
+## 14                Avalanche           225
+## 1                 High Surf           179
+## 30                Hurricane           135
+## 11               Heavy Snow           135
+## 29               Heavy Rain           108
+## 20                 Wildfire            90
+## 42           Tropical Storm            66
+## 26                Dense Fod            62
+## 17           Winter Weather            62
+## 38                  Tsunami            33
+## 12             Frost/Freeze            33
+## 18               Dust Storm            22
+## 36 Marine Thunderstorm Wind            19
+## 23                Dense Fog            18
+## 22                     Hail            15
+```
+
+```r
 FatHead2<-FatSort2[1:10,]
 
 #Aggregating and ordering events as a function of injuries with the original values given for event type
@@ -1106,6 +1235,38 @@ InjNum <- aggregate(df$INJURIES~df$EVTYPE,df,sum)
 InjNum$`df$INJURIES` <- as.numeric(as.character(InjNum$`df$INJURIES`))
 InjSort<-InjNum[rev(order(InjNum$`df$INJURIES`)),]
 head(InjSort,25)
+```
+
+```
+##              df$EVTYPE df$INJURIES
+## 834            TORNADO       91346
+## 856          TSTM WIND        6957
+## 170              FLOOD        6789
+## 130     EXCESSIVE HEAT        6525
+## 464          LIGHTNING        5230
+## 275               HEAT        2100
+## 427          ICE STORM        1975
+## 153        FLASH FLOOD        1777
+## 760  THUNDERSTORM WIND        1488
+## 244               HAIL        1361
+## 972       WINTER STORM        1321
+## 411  HURRICANE/TYPHOON        1275
+## 359          HIGH WIND        1137
+## 310         HEAVY SNOW        1021
+## 957           WILDFIRE         911
+## 786 THUNDERSTORM WINDS         908
+## 30            BLIZZARD         805
+## 188                FOG         734
+## 955   WILD/FOREST FIRE         545
+## 117         DUST STORM         440
+## 978     WINTER WEATHER         398
+## 89           DENSE FOG         342
+## 848     TROPICAL STORM         340
+## 278          HEAT WAVE         309
+## 376         HIGH WINDS         302
+```
+
+```r
 InjHead<-InjSort[1:10,]
 
 #Aggregating and ordering based on revalued events as a function of injuries
@@ -1113,15 +1274,72 @@ InjNum2 <- aggregate(df$INJURIES~df$EventName,df,sum)
 InjNum2$`df$INJURIES` <- as.numeric(as.character(InjNum2$`df$INJURIES`))
 InjSort2<-InjNum2[rev(order(InjNum2$`df$INJURIES`)),]
 head(InjSort2,25)
-InjHead2<-InjSort2[1:10,]
+```
 
+```
+##         df$EventName df$INJURIES
+## 40           Tornado       91364
+## 5  Thunderstorm Wind        9552
+## 9               Heat        9243
+## 19             Flood        6949
+## 4          Lightning        5232
+## 16      Winter Storm        4224
+## 21       Strong Wind        1907
+## 3        Flash Flood        1800
+## 20          Wildfire        1608
+## 22              Hail        1371
+## 30         Hurricane        1333
+## 11        Heavy Snow        1067
+## 26         Dense Fod         734
+## 17    Winter Weather         615
+## 37       Rip Current         529
+## 12      Frost/Freeze         465
+## 18        Dust Storm         440
+## 42    Tropical Storm         383
+## 23         Dense Fog         342
+## 15   Cold/Wind Chill         321
+## 29        Heavy Rain         287
+## 1          High Surf         259
+## 14         Avalanche         170
+## 38           Tsunami         131
+## 6         Waterspout          72
+```
+
+```r
+InjHead2<-InjSort2[1:10,]
 ```
 
 Embedding plots:
 
-```{r, echo=TRUE}
+
+```r
 library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.3.2
+```
+
+```r
 library(gridExtra)
+```
+
+```
+## Warning: package 'gridExtra' was built under R version 3.3.2
+```
+
+```
+## 
+## Attaching package: 'gridExtra'
+```
+
+```
+## The following object is masked from 'package:dplyr':
+## 
+##     combine
+```
+
+```r
 library(grid)
 
 p1<-ggplot(FatNum2, 
@@ -1144,15 +1362,15 @@ p2<-ggplot(InjNum2,
         xlab("Storm Data Event Type")
 
 grid.arrange(p1,p2,ncol=2,top=textGrob("Figure 1: Population Harm due to Storm Events",gp=gpar(fontsize=20,font=3)))
-
 ```
 
+![](RepResProj2_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 From the Figure 1 it can be seen that the the two most deadly events are heat and tornados, and that these two account for the majority of deaths in the record.  Tornadoes account for a massive amount of injuries as well, actually accounting for the majority of injuries in the entire data set.  From this it is evident that Tornadoes are the single most harmful event to humans in this recorded set of information.
 
 In order to estimate the economic impact of these storms, the property and crop cost needs to be multiplied by the letter indicator to generate the correct values.  From the NOAA website, the multiplier column can be converted with the following key: K/k=1000, M/m=1000000, B/b=1000000000.  None of the other values are specified, and are not present in large quantities, so they are converted to NA values and omitted from analysis.
 
-```{r, echo=TRUE}
 
+```r
 #Converting uncharacterized values to NA and characterized values to their corresponding multiplying values for crop and property damage
 df$CropMult <- revalue(df$CROPDMGEXP,
                c("0"=NaN,"2"=NaN,"?"=NaN,"B"=1000000000,"k"=1000,
@@ -1166,26 +1384,96 @@ df$PropMult <- revalue(df$PROPDMGEXP,
 
 
 #Calculating the total value lost due to crop and property damage while omitting values that are not clearly recorded.
-PropCost<-na.omit(df$PROPDMG*as.numeric(as.character(df$PropMult)))
-df<-cbind(df,PropCost)
-
-CropCost<-na.omit(df$CROPDMG*as.numeric(as.character(df$CropMult)))
+CropCost<-na.omit(df$PROPDMG*as.numeric(as.character(df$PropMult)))
 df<-cbind(df,CropCost)
-
-print("Crop damage")
-sum(na.omit(df$CROPDMG*as.numeric(as.character(df$CropMult))))
-print("Property damage")
-sum(na.omit(df$PROPDMG*as.numeric(as.character(df$PropMult))))
-
 ```
 
-```{r, echo=TRUE}
+```
+## Warning in data.table::data.table(...): Item 2 is of size 436042 but
+## maximum size is 902297 (recycled leaving remainder of 30213 items)
+```
 
+```r
+PropCost<-na.omit(df$CROPDMG*as.numeric(as.character(df$CropMult)))
+df<-cbind(df,PropCost)
+```
+
+```
+## Warning in data.table::data.table(...): Item 2 is of size 283857 but
+## maximum size is 902297 (recycled leaving remainder of 50726 items)
+```
+
+```r
+print("Crop damage")
+```
+
+```
+## [1] "Crop damage"
+```
+
+```r
+sum(na.omit(df$CROPDMG*as.numeric(as.character(df$CropMult))))
+```
+
+```
+## [1] 49104191910
+```
+
+```r
+print("Property damage")
+```
+
+```
+## [1] "Property damage"
+```
+
+```r
+sum(na.omit(df$PROPDMG*as.numeric(as.character(df$PropMult))))
+```
+
+```
+## [1] 427318642100
+```
+
+
+```r
 #Aggregating and ordering events as a function of crop damage
 CropDam <- aggregate(df$CropCost~df$EventName,df,sum)
 CropDam$`df$CropCost` <- as.numeric(as.character(CropDam$`df$CropCost`))
 CropSort<-CropDam[rev(order(CropDam$`df$CropCost`)),]
 head(CropSort,25)
+```
+
+```
+##                df$EventName  df$CropCost
+## 22                     Hail 325322259030
+## 5         Thunderstorm Wind 274181813940
+## 19                    Flood 134485949800
+## 40                  Tornado  47816785800
+## 3               Flash Flood  30993288810
+## 23                Dense Fog  17170675340
+## 42           Tropical Storm  10233408780
+## 4                 Lightning   9285266540
+## 21              Strong Wind   5750919220
+## 9                      Heat   4184539150
+## 29               Heavy Rain   3722268880
+## 36 Marine Thunderstorm Wind   3378898180
+## 11               Heavy Snow   3117892880
+## 27             Funnel Cloud   2568712510
+## 16             Winter Storm   2370359040
+## 17           Winter Weather   1077051310
+## 1                 High Surf   1067586470
+## 20                 Wildfire   1048773870
+## 10                  Drought    879391480
+## 15          Cold/Wind Chill    860184940
+## 12             Frost/Freeze    584312100
+## 6                Waterspout    495441510
+## 2             Coastal Flood    398026230
+## 33              Marine Hail    382696880
+## 13        Astronomical Tide    260133310
+```
+
+```r
 CropHead<-CropSort[1:10,]
 
 #Aggregating and ordering events as a function of property damage
@@ -1193,11 +1481,43 @@ PropDam <- aggregate(df$PropCost~df$EventName,df,sum)
 PropDam$`df$PropCost` <- as.numeric(as.character(PropDam$`df$PropCost`))
 PropSort<-PropDam[rev(order(PropDam$`df$PropCost`)),]
 head(PropSort,25)
-PropHead<-PropSort[1:10,]
-
 ```
 
-```{r, echo=TRUE}
+```
+##                df$EventName df$PropCost
+## 5         Thunderstorm Wind 74331552230
+## 22                     Hail 62597978020
+## 40                  Tornado 20150723220
+## 19                    Flood  9445547280
+## 21              Strong Wind  6644223830
+## 3               Flash Flood  6377347970
+## 4                 Lightning  2322874750
+## 29               Heavy Rain  1979356350
+## 36 Marine Thunderstorm Wind  1627577460
+## 27             Funnel Cloud  1151657900
+## 16             Winter Storm   926176950
+## 11               Heavy Snow   910590550
+## 20                 Wildfire   657141630
+## 13        Astronomical Tide   331929800
+## 6                Waterspout   311893150
+## 17           Winter Weather   253238650
+## 9                      Heat   178698550
+## 12             Frost/Freeze   123580050
+## 10                  Drought    83879050
+## 37              Rip Current    79976700
+## 23                Dense Fog    79290000
+## 15          Cold/Wind Chill    61572250
+## 2             Coastal Flood    61279500
+## 26                Dense Fod    49798500
+## 1                 High Surf    23919400
+```
+
+```r
+PropHead<-PropSort[1:10,]
+```
+
+
+```r
 library(ggplot2)
 library(gridExtra)
 library(grid)
@@ -1222,9 +1542,9 @@ p4<-ggplot(PropDam,
         xlab("Storm Data Event Type")
 
 grid.arrange(p3,p4,ncol=2,top=textGrob("Figure 2: Economic Cost of Storm Events",gp=gpar(fontsize=20,font=3)))
-
-
 ```
+
+![](RepResProj2_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 From the Figure 2 it is obvious that the storm events causing the largest
 economic losses 
 
